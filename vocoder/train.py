@@ -13,7 +13,7 @@ import time
 
 
 def train(run_id: str, syn_dir: Path, voc_dir: Path, models_dir: Path, ground_truth: bool,
-          save_every: int, backup_every: int, force_restart: bool):
+        save_every: int, backup_every: int, force_restart: bool, epochs: int):
     # Check to make sure the hop length is correctly factorised
     assert np.cumprod(hp.voc_upsample_factors)[-1] == hp.hop_length
     
@@ -68,7 +68,8 @@ def train(run_id: str, syn_dir: Path, voc_dir: Path, models_dir: Path, ground_tr
                   ('LR', hp.voc_lr),
                   ('Sequence Len', hp.voc_seq_len)])
     
-    for epoch in range(1, 350):
+    # Originally 350 epochs 
+    for epoch in range(1, epochs):
         data_loader = DataLoader(dataset,
                                  collate_fn=collate_vocoder,
                                  batch_size=hp.voc_batch_size,

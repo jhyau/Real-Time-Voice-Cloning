@@ -11,11 +11,19 @@ import librosa
 
 
 def preprocess_librispeech(datasets_root: Path, out_dir: Path, n_processes: int, 
-                           skip_existing: bool, hparams):
+                           skip_existing: bool, hparams, language):
     # Gather the input directories
-    dataset_root = datasets_root.joinpath("LibriSpeech")
-    input_dirs = [dataset_root.joinpath("train-clean-100"), 
-                  dataset_root.joinpath("train-clean-360")]
+    if (language == "english"):
+        name = "LibriSpeech"
+        dataset_root = datasets_root.joinpath("LibriSpeech")
+        input_dirs = [dataset_root.joinpath("train-clean-100"),
+                dataset_rot.joinpath("train-clean-360")]
+    elif (language == "german"):
+        name = "SWC-Processed"
+        dataset_root = datasets_root.joinpath("SWC-Processed")
+        input_dirs = [dataset_root.joinpath("german")]
+    # input_dirs = [dataset_root.joinpath("train-clean-100"), 
+    #              dataset_root.joinpath("train-clean-360")]
     print("\n    ".join(map(str, ["Using data from:"] + input_dirs)))
     assert all(input_dir.exists() for input_dir in input_dirs)
     
@@ -29,10 +37,11 @@ def preprocess_librispeech(datasets_root: Path, out_dir: Path, n_processes: int,
 
     # Preprocess the dataset
     speaker_dirs = list(chain.from_iterable(input_dir.glob("*") for input_dir in input_dirs))
+    #print(speaker_dirs)
     func = partial(preprocess_speaker, out_dir=out_dir, skip_existing=skip_existing, 
                    hparams=hparams)
     job = Pool(n_processes).imap(func, speaker_dirs)
-    for speaker_metadata in tqdm(job, "LibriSpeech", len(speaker_dirs), unit="speakers"):
+    for speaker_metadata in tqdm(job, name, len(speaker_dirs), unit="speakers"):
         for metadatum in speaker_metadata:
             metadata_file.write("|".join(str(x) for x in metadatum) + "\n")
     metadata_file.close()
@@ -53,6 +62,7 @@ def preprocess_librispeech(datasets_root: Path, out_dir: Path, n_processes: int,
 
 def preprocess_speaker(speaker_dir, out_dir: Path, skip_existing: bool, hparams):
     metadata = []
+    print("proprocessing speaker: ", speaker_dir)
     for book_dir in speaker_dir.glob("*"):
         # Gather the utterance audios and texts
         try:
@@ -72,6 +82,10 @@ def preprocess_speaker(speaker_dir, out_dir: Path, skip_existing: bool, hparams)
             
             # Process each sub-utterance
             wavs, texts = split_on_silences(wav_fpath, words, end_times, hparams)
+            # If exception was reached (usually ValueError array is too big), then skip it
+            if not wavs:
+                continue
+
             for i, (wav, text) in enumerate(zip(wavs, texts)):
                 sub_basename = "%s_%02d" % (wav_fname, i)
                 metadata.append(process_utterance(wav, text, out_dir, sub_basename, 
@@ -82,7 +96,12 @@ def preprocess_speaker(speaker_dir, out_dir: Path, skip_existing: bool, hparams)
 
 def split_on_silences(wav_fpath, words, end_times, hparams):
     # Load the audio waveform
-    wav, _ = librosa.load(wav_fpath, hparams.sample_rate)
+    try:
+        wav, _ = librosa.load(wav_fpath, hparams.sample_rate)
+    except Exception as ex:
+        print("Splitting on silences: ", wav_fpath)
+        print("Exception reached: " + str(ex))
+        return False, False
     if hparams.rescale:
         wav = wav / np.abs(wav).max() * hparams.rescaling_max
     
