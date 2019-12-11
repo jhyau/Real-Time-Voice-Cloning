@@ -24,6 +24,8 @@ if __name__ == "__main__":
         "interrupted.")
     parser.add_argument("--hparams", type=str, default="", help=\
         "Hyperparameter overrides as a comma-separated list of name-value pairs")
+    parser.add_argument("--language", type=str, default="LibriSpeech", help=\
+        "Which language dataset to use. Default is english (LibriSpeech). Also has german.")
     args = parser.parse_args()
     
     # Process the arguments

@@ -37,6 +37,8 @@ if __name__ == "__main__":
         "model.")
     parser.add_argument("-f", "--force_restart", action="store_true", help= \
         "Do not load any saved model and restart from scratch.")
+    parser.add_argument("-e", "--epochs", type=int, default=350, help= \
+            "Number of epochs to run the model.")
     args = parser.parse_args()
 
     # Process the arguments
