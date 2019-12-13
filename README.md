@@ -1,4 +1,6 @@
 # Real-Time Voice Cloning
+This forked repository is a final project for Stanford's CS 236: Deep Generative Models class. This project was on multi-speaker text to speech, trained on English(LibriSpeech) and German(Spoken Wikipedia Corpora) languages. The files that were modified were for synthesizer preprocessing and vocoder training. Also, the code for WAV file visualization is added as well as data preprocessing. The actual datasets are not included due to the large sizes. 
+
 This repository is an implementation of [Transfer Learning from Speaker Verification to
 Multispeaker Text-To-Speech Synthesis](https://arxiv.org/pdf/1806.04558.pdf) (SV2TTS) with a vocoder that works in real-time. Feel free to check [my thesis](https://matheo.uliege.be/handle/2268.2/6801) if you're curious or if you're looking for info I haven't documented yet (don't hesitate to make an issue for that too). Mostly I would recommend giving a quick look to the figures beyond the introduction.
 
